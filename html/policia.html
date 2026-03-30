@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Panel Policial — FELCC DP-8</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+<div class="app-layout">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+        <div class="sidebar-logo">
+            <div class="logo-icon"><i class="fas fa-shield-halved"></i></div>
+            <div class="logo-text">
+                <h2>FELCC DP-8</h2>
+                <span>PANEL POLICIAL</span>
+            </div>
+        </div>
+        <div class="sidebar-profile">
+            <div class="avatar">PL</div>
+            <div class="profile-info">
+                <div class="name">{{ session.nombre }}</div>
+                <div class="email">{{ session.email }}</div>
+                <div class="badge-role">🚔 OFICIAL POLICIAL</div>
+            </div>
+        </div>
+        <nav class="sidebar-nav">
+            <div class="nav-section">Operaciones</div>
+            <a href="/policia" class="nav-item active"><i class="fas fa-home"></i> Inicio</a>
+            <a href="#" class="nav-item" onclick="openModal('modal-nueva-denuncia')">
+                <i class="fas fa-file-signature"></i> Registrar Denuncia
+            </a>
+
+            <div class="nav-section">Gestión de Casos</div>
+            <a href="#tabla-casos" class="nav-item"><i class="fas fa-folder-open"></i> Mis Casos</a>
+            <a href="#" class="nav-item"><i class="fas fa-print"></i> Imprimir Actas</a>
+        </nav>
+        <div class="sidebar-footer">
+            <a href="/logout" class="btn-logout"><i class="fas fa-sign-out-alt"></i> Cerrar Sesión</a>
+        </div>
+    </aside>
+
+    <!-- MAIN -->
+    <div class="main-content">
+        <header class="topbar">
+            <div class="topbar-title">
+                <h1>Panel Operativo Policial</h1>
+                <p>Fuerza Especial de Lucha Contra el Crimen — DP-8</p>
+            </div>
+            <div class="topbar-right">
+                <span class="topbar-badge verde"><i class="fas fa-circle"></i> Sistema Activo</span>
+                <button class="btn btn-verde" onclick="openModal('modal-nueva-denuncia')">
+                    <i class="fas fa-plus"></i> Nueva Denuncia
+                </button>
+            </div>
+        </header>
+
+        <main class="page">
+            <!-- STATS -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon verde"><i class="fas fa-file-alt"></i></div>
+                    <div class="stat-info"><label>Mis Denuncias</label><h3>{{ total }}</h3></div>
+                </div>
+                <div class="stat-card dorado">
+                    <div class="stat-icon dorado"><i class="fas fa-folder-open"></i></div>
+                    <div class="stat-info"><label>En Proceso</label><h3>{{ pendientes }}</h3></div>
+                </div>
+                <div class="stat-card rojo">
+                    <div class="stat-icon rojo"><i class="fas fa-share"></i></div>
+                    <div class="stat-info"><label>Derivadas a Fiscalía</label>
+                        <h3>{{ denuncias | selectattr('estado', 'equalto', 'Derivada a Fiscalia') | list | length }}</h3>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon verde"><i class="fas fa-check-double"></i></div>
+                    <div class="stat-info"><label>Cerradas</label><h3>{{ cerradas }}</h3></div>
+                </div>
+            </div>
+
+            <!-- TABLA DENUNCIAS -->
+            <div class="card" id="tabla-casos">
+                <div class="card-header">
+                    <h3><i class="fas fa-folder-open"></i> Mis Casos Asignados</h3>
+                    <button class="btn btn-verde btn-sm" onclick="openModal('modal-nueva-denuncia')">
+                        <i class="fas fa-plus"></i> Nueva
+                    </button>
+                </div>
+                <div class="table-wrap">
+                {% if denuncias %}
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Folio</th>
+                                <th>Denunciante</th>
+                                <th>Tipo de Delito</th>
+                                <th>Fecha</th>
+                                <th>Estado</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        {% for d in denuncias %}
+                        <tr>
+                            <td><strong style="font-family:monospace; color:var(--verde);">{{ d.folio }}</strong></td>
+                            <td>{{ d.denunciante_nombre }}</td>
+                            <td>{{ d.tipo_delito }}</td>
+                            <td style="color:var(--gris-texto); font-size:13px;">{{ d.fecha[:10] }}</td>
+                            <td>
+                                {% if d.estado == 'Recibida' %}
+                                <span class="badge gris">{{ d.estado }}</span>
+                                {% elif d.estado == 'En Investigacion' %}
+                                <span class="badge dorado">{{ d.estado }}</span>
+                                {% elif d.estado == 'Derivada a Fiscalia' %}
+                                <span class="badge azul">{{ d.estado }}</span>
+                                {% elif d.estado == 'Citacion Emitida' %}
+                                <span class="badge morado" style="background:#f3e8ff; color:#4c1d95;">{{ d.estado }}</span>
+                                {% else %}
+                                <span class="badge verde">{{ d.estado }}</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if d.estado not in ['Derivada a Fiscalia', 'Citacion Emitida', 'Cerrada'] %}
+                                <form method="POST" action="/policia/denuncia/{{ d.id }}/derivar" style="display:inline;">
+                                    <button type="submit" class="btn btn-sm btn-dorado"
+                                        onclick="return confirm('¿Derivar caso {{ d.folio }} a la Fiscalía?')">
+                                        <i class="fas fa-share"></i> Enviar a Fiscal
+                                    </button>
+                                </form>
+                                {% else %}
+                                <span style="font-size:12px; color:var(--gris-texto);">—</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                {% else %}
+                    <div class="empty-state">
+                        <i class="fas fa-folder-open"></i>
+                        <h4>Sin casos registrados aún</h4>
+                        <p>Usa el botón <strong>"Nueva Denuncia"</strong> para comenzar.</p>
+                    </div>
+                {% endif %}
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+
+<!-- MODAL NUEVA DENUNCIA -->
+<div class="modal-overlay" id="modal-nueva-denuncia">
+    <div class="modal" style="max-width: 700px;">
+        <div class="modal-header">
+            <h3><i class="fas fa-file-signature"></i> Registrar Nueva Denuncia</h3>
+            <button class="modal-close" onclick="closeModal('modal-nueva-denuncia')">×</button>
+        </div>
+        <form method="POST" action="/policia/denuncia/nueva">
+            <div class="modal-body">
+                <p style="font-size:13px; color:var(--gris-texto); margin-bottom:20px; background:var(--verde-light); padding:10px 14px; border-radius:8px;">
+                    <i class="fas fa-info-circle"></i> El número de folio se asignará automáticamente al registrar.
+                </p>
+
+                <p style="font-weight:700; color:var(--verde); margin-bottom:12px; font-size:14px;">
+                    <i class="fas fa-user"></i> Datos del Denunciante
+                </p>
+                <div class="form-grid form-grid-3" style="margin-bottom:16px;">
+                    <div class="form-group">
+                        <label>Nombre Completo</label>
+                        <input type="text" name="denunciante_nombre" placeholder="Nombres y apellidos" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Cédula de Identidad</label>
+                        <input type="text" name="denunciante_ci" placeholder="N° CI" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Celular</label>
+                        <input type="text" name="denunciante_celular" placeholder="N° Celular" required>
+                    </div>
+                </div>
+                <div class="form-group" style="margin-bottom:20px;">
+                    <label>Dirección</label>
+                    <input type="text" name="denunciante_direccion" placeholder="Zona, UV, Calle y N°">
+                </div>
+
+                <p style="font-weight:700; color:var(--rojo); margin-bottom:12px; font-size:14px;">
+                    <i class="fas fa-user-ninja"></i> Datos del Denunciado (si se conoce)
+                </p>
+                <div class="form-group" style="margin-bottom:20px;">
+                    <label>Nombres, Apellidos o Apodos</label>
+                    <input type="text" name="denunciado_nombre" placeholder="Datos del presunto autor">
+                </div>
+
+                <div class="form-grid form-grid-2">
+                    <div class="form-group">
+                        <label>Tipo de Delito</label>
+                        <select name="tipo_delito" required>
+                            <option value="">— Seleccionar —</option>
+                            <option>Robo Agravado</option>
+                            <option>Robo Simple</option>
+                            <option>Violencia Familiar</option>
+                            <option>Estafa</option>
+                            <option>Daño en Bien Ajeno</option>
+                            <option>Amenazas</option>
+                            <option>Lesiones</option>
+                            <option>Otros</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Relación de Hechos</label>
+                        <textarea name="descripcion" placeholder="Describa cómo, cuándo y dónde ocurrieron los hechos..." required></textarea>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline" onclick="closeModal('modal-nueva-denuncia')">Cancelar</button>
+                <button type="submit" class="btn btn-verde"><i class="fas fa-save"></i> Registrar Denuncia</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>

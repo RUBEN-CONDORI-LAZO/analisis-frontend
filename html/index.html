@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FELCC DP-8 — Sistema de Control de Denuncias</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --verde: #004130;
+            --verde2: #006e52;
+            --dorado: #D4AF37;
+            --blanco: #ffffff;
+            --gris: #f0f2f5;
+        }
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        html { scroll-behavior: smooth; }
+        body { font-family: 'Inter', sans-serif; background: var(--blanco); color: #1e293b; }
+
+        /* NAV */
+        nav {
+            position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 0 60px; height: 70px;
+            background: rgba(0, 65, 48, 0.97);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 2px 20px rgba(0,0,0,.3);
+        }
+        .nav-brand { display: flex; align-items: center; gap: 12px; text-decoration: none; }
+        .nav-brand .icon {
+            width: 40px; height: 40px; background: var(--dorado);
+            border-radius: 10px; display: flex; align-items: center; justify-content: center;
+            font-size: 20px; color: var(--verde);
+        }
+        .nav-brand span { color: white; font-weight: 800; font-size: 18px; }
+        .nav-links { display: flex; gap: 32px; }
+        .nav-links a { color: rgba(255,255,255,.75); text-decoration: none; font-size: 14px; font-weight: 500; transition: .2s; }
+        .nav-links a:hover { color: var(--dorado); }
+        .nav-cta {
+            background: var(--dorado); color: var(--verde); border: none;
+            padding: 10px 28px; border-radius: 8px; font-weight: 700; font-size: 14px;
+            cursor: pointer; text-decoration: none; transition: .2s;
+        }
+        .nav-cta:hover { background: #c9a227; transform: translateY(-1px); }
+
+        /* HERO */
+        .hero {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #002e22 0%, #004130 40%, #006e52 100%);
+            display: flex; align-items: center; justify-content: center;
+            text-align: center; padding: 100px 40px 60px;
+            position: relative; overflow: hidden;
+        }
+        .hero::before {
+            content: '';
+            position: absolute; inset: 0;
+            background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+        }
+        .hero-content { position: relative; z-index: 1; max-width: 800px; }
+        .hero-badge {
+            display: inline-flex; align-items: center; gap: 8px;
+            background: rgba(255,255,255,.1); border: 1px solid rgba(255,255,255,.2);
+            color: var(--dorado); padding: 8px 20px; border-radius: 30px;
+            font-size: 13px; font-weight: 600; margin-bottom: 28px;
+            letter-spacing: .5px;
+        }
+        .hero h1 {
+            font-size: clamp(36px, 5vw, 64px);
+            font-weight: 900; color: white; line-height: 1.1;
+            margin-bottom: 20px;
+        }
+        .hero h1 span { color: var(--dorado); }
+        .hero p {
+            font-size: 18px; color: rgba(255,255,255,.75);
+            max-width: 600px; margin: 0 auto 40px; line-height: 1.7;
+        }
+        .hero-btns { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; }
+        .btn-hero-primary {
+            background: var(--dorado); color: var(--verde);
+            padding: 16px 40px; border-radius: 10px; font-weight: 800;
+            font-size: 16px; text-decoration: none; display: inline-flex;
+            align-items: center; gap: 10px; transition: .2s;
+            box-shadow: 0 8px 25px rgba(212,175,55,.4);
+        }
+        .btn-hero-primary:hover { background: #c9a227; transform: translateY(-2px); }
+        .btn-hero-secondary {
+            background: rgba(255,255,255,.1); color: white;
+            border: 1px solid rgba(255,255,255,.3);
+            padding: 16px 40px; border-radius: 10px; font-weight: 600;
+            font-size: 16px; text-decoration: none;
+            display: inline-flex; align-items: center; gap: 10px; transition: .2s;
+        }
+        .btn-hero-secondary:hover { background: rgba(255,255,255,.2); }
+
+        .hero-stats {
+            display: flex; gap: 48px; justify-content: center;
+            margin-top: 60px; flex-wrap: wrap;
+        }
+        .hero-stat { text-align: center; }
+        .hero-stat .num { font-size: 36px; font-weight: 900; color: var(--dorado); }
+        .hero-stat .lbl { font-size: 13px; color: rgba(255,255,255,.6); margin-top: 4px; }
+
+        /* ROLES SECTION */
+        .section { padding: 90px 60px; }
+        .section-header { text-align: center; margin-bottom: 60px; }
+        .section-header .eyebrow {
+            display: inline-block; background: rgba(0,65,48,.08); color: var(--verde2);
+            padding: 6px 18px; border-radius: 20px; font-size: 12px; font-weight: 700;
+            text-transform: uppercase; letter-spacing: 1px; margin-bottom: 14px;
+        }
+        .section-header h2 { font-size: 40px; font-weight: 800; margin-bottom: 14px; }
+        .section-header p { font-size: 17px; color: #64748b; max-width: 560px; margin: 0 auto; }
+
+        .roles-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 28px; max-width: 1100px; margin: 0 auto; }
+
+        .role-card {
+            border-radius: 20px; padding: 40px 32px;
+            text-align: center; transition: .3s;
+            position: relative; overflow: hidden;
+        }
+        .role-card:hover { transform: translateY(-6px); box-shadow: 0 20px 40px rgba(0,0,0,.15); }
+        .role-card.admin { background: linear-gradient(135deg, #1e3a8a, #1d4ed8); color: white; }
+        .role-card.policia { background: linear-gradient(135deg, #004130, #006e52); color: white; }
+        .role-card.fiscal { background: linear-gradient(135deg, #4c1d95, #7c3aed); color: white; }
+
+        .role-icon {
+            width: 80px; height: 80px; border-radius: 20px;
+            background: rgba(255,255,255,.15);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 36px; margin: 0 auto 24px;
+        }
+        .role-card h3 { font-size: 22px; font-weight: 800; margin-bottom: 8px; }
+        .role-card .email { font-size: 13px; opacity: .7; margin-bottom: 20px; font-family: monospace; }
+        .role-features { list-style: none; text-align: left; }
+        .role-features li {
+            padding: 8px 0; font-size: 14px; opacity: .9;
+            border-bottom: 1px solid rgba(255,255,255,.1);
+            display: flex; align-items: center; gap: 10px;
+        }
+        .role-features li:last-child { border-bottom: none; }
+        .role-features li i { font-size: 12px; color: var(--dorado); }
+
+        /* FEATURES */
+        .features-section { background: var(--gris); }
+        .features-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; max-width: 1100px; margin: 0 auto; }
+        .feature-card {
+            background: white; border-radius: 16px; padding: 32px;
+            box-shadow: 0 2px 8px rgba(0,0,0,.06); transition: .2s;
+        }
+        .feature-card:hover { transform: translateY(-3px); box-shadow: 0 8px 20px rgba(0,0,0,.1); }
+        .feature-card .fi {
+            width: 56px; height: 56px; border-radius: 14px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 24px; margin-bottom: 20px;
+        }
+        .feature-card h4 { font-size: 18px; font-weight: 700; margin-bottom: 10px; }
+        .feature-card p { font-size: 14px; color: #64748b; line-height: 1.6; }
+
+        /* CTA */
+        .cta-section {
+            background: linear-gradient(135deg, #002e22, #004130);
+            padding: 100px 60px; text-align: center; color: white;
+        }
+        .cta-section h2 { font-size: 42px; font-weight: 900; margin-bottom: 16px; }
+        .cta-section p { font-size: 18px; opacity: .75; max-width: 500px; margin: 0 auto 40px; }
+        .cta-credentials {
+            display: inline-flex; gap: 32px; flex-wrap: wrap; justify-content: center;
+            background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.15);
+            border-radius: 16px; padding: 24px 40px; margin-bottom: 40px;
+        }
+        .cred { text-align: left; }
+        .cred .role { font-size: 11px; font-weight: 700; color: var(--dorado); text-transform: uppercase; margin-bottom: 4px; }
+        .cred .info { font-size: 14px; font-family: monospace; color: white; }
+
+        footer {
+            background: #0a1628; color: rgba(255,255,255,.5);
+            padding: 24px 60px; text-align: center; font-size: 13px;
+        }
+
+        @media(max-width: 900px) {
+            nav { padding: 0 20px; }
+            .nav-links { display: none; }
+            .section { padding: 60px 24px; }
+            .roles-grid, .features-grid { grid-template-columns: 1fr; }
+            .hero { padding: 100px 24px 60px; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav>
+    <a class="nav-brand" href="/">
+        <div class="icon"><i class="fas fa-shield-halved"></i></div>
+        <span>FELCC DP-8</span>
+    </a>
+    <div class="nav-links">
+        <a href="#roles">Roles</a>
+        <a href="#funciones">Funciones</a>
+        <a href="#acceso">Acceso</a>
+    </div>
+    <a href="/login" class="nav-cta"><i class="fas fa-sign-in-alt"></i> Ingresar</a>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+    <div class="hero-content">
+        <div class="hero-badge">
+            <i class="fas fa-circle" style="font-size:8px; color: #4ade80;"></i>
+            Sistema Activo — Distrito Policial N° 8
+        </div>
+        <h1>Sistema de Control de<br><span>Denuncias Policiales</span></h1>
+        <p>Plataforma integral para la gestión operativa y jurídica de denuncias de la Fuerza Especial de Lucha Contra el Crimen de Santa Cruz.</p>
+        <div class="hero-btns">
+            <a href="/login" class="btn-hero-primary">
+                <i class="fas fa-sign-in-alt"></i> Ingresar al Sistema
+            </a>
+            <a href="#roles" class="btn-hero-secondary">
+                <i class="fas fa-info-circle"></i> Ver Funciones
+            </a>
+        </div>
+        <div class="hero-stats">
+            <div class="hero-stat"><div class="num">3</div><div class="lbl">Roles de Acceso</div></div>
+            <div class="hero-stat"><div class="num">100%</div><div class="lbl">Funcional</div></div>
+            <div class="hero-stat"><div class="num">DP-8</div><div class="lbl">Santa Cruz</div></div>
+        </div>
+    </div>
+</section>
+
+<!-- ROLES -->
+<section class="section" id="roles">
+    <div class="section-header">
+        <div class="eyebrow">Acceso por Roles</div>
+        <h2>Tres perfiles especializados</h2>
+        <p>Cada usuario accede solo a las funciones que corresponden a su rol institucional.</p>
+    </div>
+    <div class="roles-grid">
+        <div class="role-card admin">
+            <div class="role-icon"><i class="fas fa-crown"></i></div>
+            <h3>Administrador</h3>
+            <div class="email">admin@gmail.com · 12345</div>
+            <ul class="role-features">
+                <li><i class="fas fa-check"></i> Gestionar todos los usuarios</li>
+                <li><i class="fas fa-check"></i> Crear y suspender cuentas</li>
+                <li><i class="fas fa-check"></i> Asignar roles del sistema</li>
+                <li><i class="fas fa-check"></i> Ver estadísticas globales</li>
+            </ul>
+        </div>
+        <div class="role-card policia">
+            <div class="role-icon"><i class="fas fa-star"></i></div>
+            <h3>Oficial Policial</h3>
+            <div class="email">policia@gmail.com · 12345</div>
+            <ul class="role-features">
+                <li><i class="fas fa-check"></i> Registrar nuevas denuncias</li>
+                <li><i class="fas fa-check"></i> Ver y gestionar sus casos</li>
+                <li><i class="fas fa-check"></i> Derivar casos a la Fiscalía</li>
+                <li><i class="fas fa-check"></i> Imprimir actas policiales</li>
+            </ul>
+        </div>
+        <div class="role-card fiscal">
+            <div class="role-icon"><i class="fas fa-balance-scale"></i></div>
+            <h3>Fiscal de Materia</h3>
+            <div class="email">fiscal@gmail.com · 12345</div>
+            <ul class="role-features">
+                <li><i class="fas fa-check"></i> Revisar bandeja de casos</li>
+                <li><i class="fas fa-check"></i> Emitir citaciones policiales</li>
+                <li><i class="fas fa-check"></i> Mandamiento de apremio</li>
+                <li><i class="fas fa-check"></i> Documentos legales imprimibles</li>
+            </ul>
+        </div>
+    </div>
+</section>
+
+<!-- FUNCIONES -->
+<section class="section features-section" id="funciones">
+    <div class="section-header">
+        <div class="eyebrow" style="background:rgba(0,65,48,.1); color:var(--verde);">Funcionalidades</div>
+        <h2>Tecnología al servicio de la justicia</h2>
+        <p>Herramientas diseñadas para optimizar cada etapa del proceso.</p>
+    </div>
+    <div class="features-grid">
+        <div class="feature-card">
+            <div class="fi" style="background:#e6f4ea; color:#004130;"><i class="fas fa-file-signature"></i></div>
+            <h4>Registro de Denuncias</h4>
+            <p>Formulario completo con folio automático, datos del denunciante y denunciado, relación de hechos y tipo de delito.</p>
+        </div>
+        <div class="feature-card">
+            <div class="fi" style="background:#eff6ff; color:#1e3a8a;"><i class="fas fa-users-cog"></i></div>
+            <h4>Gestión de Usuarios</h4>
+            <p>El administrador puede crear, editar, activar o suspender cuentas de policías y fiscales con pleno control de acceso.</p>
+        </div>
+        <div class="feature-card">
+            <div class="fi" style="background:#f3e8ff; color:#4c1d95;"><i class="fas fa-gavel"></i></div>
+            <h4>Citaciones Legales</h4>
+            <p>El fiscal emite citaciones desde la bandeja de casos recibidos. El documento se genera automáticamente y es imprimible.</p>
+        </div>
+        <div class="feature-card">
+            <div class="fi" style="background:#fefce8; color:#854d0e;"><i class="fas fa-share-alt"></i></div>
+            <h4>Flujo de Trabajo</h4>
+            <p>Los casos escalan automáticamente: Policía registra → deriva a Fiscal → Fiscal emite citación → proceso judicial.</p>
+        </div>
+        <div class="feature-card">
+            <div class="fi" style="background:#fdecea; color:#b71c1c;"><i class="fas fa-exclamation-circle"></i></div>
+            <h4>Apremios y Alertas</h4>
+            <p>En caso de incomparecencia injustificada, el fiscal puede emitir mandamiento de apremio con un solo clic.</p>
+        </div>
+        <div class="feature-card">
+            <div class="fi" style="background:#e6f4ea; color:#004130;"><i class="fas fa-print"></i></div>
+            <h4>Documentos Oficiales</h4>
+            <p>Citaciones en formato legal A4 listas para imprimir, con firma del fiscal, número oficial y advertencias legales.</p>
+        </div>
+    </div>
+</section>
+
+<!-- CTA -->
+<section class="cta-section" id="acceso">
+    <h2>Listo para usar</h2>
+    <p>Accede con alguna de estas credenciales para explorar el sistema completo.</p>
+    <div class="cta-credentials">
+        <div class="cred">
+            <div class="role">🔑 Administrador</div>
+            <div class="info">admin@gmail.com / 12345</div>
+        </div>
+        <div class="cred">
+            <div class="role">🚔 Policía</div>
+            <div class="info">policia@gmail.com / 12345</div>
+        </div>
+        <div class="cred">
+            <div class="role">⚖️ Fiscal</div>
+            <div class="info">fiscal@gmail.com / 12345</div>
+        </div>
+    </div>
+    <a href="/login" class="btn-hero-primary" style="font-size:18px; padding:18px 50px;">
+        <i class="fas fa-sign-in-alt"></i> Ingresar Ahora
+    </a>
+</section>
+
+<footer>
+    &copy; 2025 Sistema FELCC DP-8 — Análisis y Diseño de Sistemas II — Grupo 4 | Santa Cruz de la Sierra, Bolivia
+</footer>
+
+</body>
+</html>

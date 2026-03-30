@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Panel Fiscal — FELCC DP-8</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+<div class="app-layout">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar fiscal-sidebar">
+        <div class="sidebar-logo">
+            <div class="logo-icon" style="color:#4c1d95;"><i class="fas fa-balance-scale"></i></div>
+            <div class="logo-text">
+                <h2>FELCC DP-8</h2>
+                <span>PANEL FISCAL</span>
+            </div>
+        </div>
+        <div class="sidebar-profile">
+            <div class="avatar" style="background:rgba(255,255,255,.2);">FC</div>
+            <div class="profile-info">
+                <div class="name">{{ session.nombre }}</div>
+                <div class="email">{{ session.email }}</div>
+                <div class="badge-role">⚖️ FISCAL DE MATERIA</div>
+            </div>
+        </div>
+        <nav class="sidebar-nav">
+            <div class="nav-section">Escritorio Legal</div>
+            <a href="/fiscal" class="nav-item active"><i class="fas fa-gavel"></i> Dashboard Fiscal</a>
+
+            <div class="nav-section">Revisión Jurídica</div>
+            <a href="#tabla-bandeja" class="nav-item"><i class="fas fa-inbox"></i> Bandeja de Entrada</a>
+            <a href="#tabla-citaciones" class="nav-item"><i class="fas fa-file-signature"></i> Citaciones Emitidas</a>
+
+            <div class="nav-section">Resoluciones</div>
+            <a href="#" class="nav-item"><i class="fas fa-exclamation-circle"></i> Apremios Activos</a>
+        </nav>
+        <div class="sidebar-footer">
+            <a href="/logout" class="btn-logout"><i class="fas fa-sign-out-alt"></i> Cerrar Sesión</a>
+        </div>
+    </aside>
+
+    <!-- MAIN -->
+    <div class="main-content">
+        <header class="topbar">
+            <div class="topbar-title">
+                <h1>Panel Jurídico — Fiscalía</h1>
+                <p>Ministerio Público — Distrito Policial N° 8</p>
+            </div>
+            <div class="topbar-right">
+                <span class="topbar-badge morado"><i class="fas fa-university"></i> Ministerio Público</span>
+            </div>
+        </header>
+
+        <main class="page">
+            <!-- STATS -->
+            <div class="stats-grid">
+                <div class="stat-card morado">
+                    <div class="stat-icon morado"><i class="fas fa-inbox"></i></div>
+                    <div class="stat-info"><label>Casos por Revisar</label><h3>{{ bandeja | length }}</h3></div>
+                </div>
+                <div class="stat-card dorado">
+                    <div class="stat-icon dorado"><i class="fas fa-file-signature"></i></div>
+                    <div class="stat-info"><label>Citaciones Emitidas</label><h3>{{ emitidas }}</h3></div>
+                </div>
+                <div class="stat-card rojo">
+                    <div class="stat-icon rojo"><i class="fas fa-gavel"></i></div>
+                    <div class="stat-info"><label>Apremios Activos</label><h3>{{ apremios }}</h3></div>
+                </div>
+            </div>
+
+            <!-- BANDEJA DE ENTRADA -->
+            <div class="card" id="tabla-bandeja">
+                <div class="card-header">
+                    <h3><i class="fas fa-inbox"></i> Bandeja de Entrada — Casos de Policía</h3>
+                </div>
+                <div class="table-wrap">
+                {% if bandeja %}
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Folio</th>
+                                <th>Denunciante</th>
+                                <th>Delito</th>
+                                <th>Derivado por</th>
+                                <th>Fecha</th>
+                                <th>Estado</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        {% for d in bandeja %}
+                        <tr>
+                            <td><strong style="font-family:monospace; color:#4c1d95;">{{ d.folio }}</strong></td>
+                            <td>{{ d.denunciante_nombre }}</td>
+                            <td>{{ d.tipo_delito }}</td>
+                            <td style="color:var(--gris-texto);">{{ d.nombre_policia }}</td>
+                            <td style="color:var(--gris-texto); font-size:13px;">{{ d.fecha[:10] }}</td>
+                            <td>
+                                {% if d.estado == 'Derivada a Fiscalia' %}
+                                <span class="badge azul">Pendiente</span>
+                                {% else %}
+                                <span class="badge morado" style="background:#f3e8ff;color:#4c1d95;">Citación Emitida</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if d.estado == 'Derivada a Fiscalia' %}
+                                <button class="btn btn-sm btn-morado"
+                                    onclick="abrirCitacion({{ d.id }}, '{{ d.denunciado_nombre or d.denunciante_nombre }}', '{{ d.folio }}')">
+                                    <i class="fas fa-file-signature"></i> Emitir Citación
+                                </button>
+                                {% else %}
+                                <span style="font-size:12px; color:var(--gris-texto);">Citación activa</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                {% else %}
+                    <div class="empty-state">
+                        <i class="fas fa-inbox"></i>
+                        <h4>Bandeja vacía</h4>
+                        <p>No hay casos derivados desde la Policía aún.</p>
+                    </div>
+                {% endif %}
+                </div>
+            </div>
+
+            <!-- CITACIONES EMITIDAS -->
+            <div class="card" id="tabla-citaciones">
+                <div class="card-header">
+                    <h3><i class="fas fa-file-signature"></i> Citaciones Emitidas</h3>
+                </div>
+                <div class="table-wrap">
+                {% if citaciones %}
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>N° Citación</th>
+                                <th>Folio Caso</th>
+                                <th>Citado</th>
+                                <th>Fecha Cita</th>
+                                <th>Hora</th>
+                                <th>Estado</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        {% for c in citaciones %}
+                        <tr>
+                            <td><strong style="font-family:monospace; color:#4c1d95; font-size:12px;">{{ c.numero }}</strong></td>
+                            <td style="font-size:12px; color:var(--gris-texto);">{{ c.folio }}</td>
+                            <td>{{ c.citado_nombre }}</td>
+                            <td>{{ c.fecha_cita }}</td>
+                            <td>{{ c.hora_cita }}</td>
+                            <td>
+                                {% if c.estado == 'Emitida' %}
+                                <span class="badge azul">Emitida</span>
+                                {% elif c.estado == 'Comparecio' %}
+                                <span class="badge verde">Compareció</span>
+                                {% else %}
+                                <span class="badge rojo">Incomparecencia</span>
+                                {% endif %}
+                            </td>
+                            <td style="display:flex; gap:8px; flex-wrap:wrap;">
+                                <a href="/fiscal/citacion/{{ c.id }}/imprimir" target="_blank"
+                                   class="btn btn-sm btn-outline">
+                                    <i class="fas fa-print"></i> Imprimir
+                                </a>
+                                {% if c.estado == 'Emitida' %}
+                                <form method="POST" action="/fiscal/apremio/{{ c.id }}">
+                                    <button type="submit" class="btn btn-sm btn-rojo-outline"
+                                        onclick="return confirm('¿Emitir Mandamiento de Apremio?')">
+                                        <i class="fas fa-exclamation-circle"></i> Apremio
+                                    </button>
+                                </form>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                {% else %}
+                    <div class="empty-state">
+                        <i class="fas fa-file-signature"></i>
+                        <h4>Sin citaciones aún</h4>
+                        <p>Emite una citación desde la bandeja de entrada.</p>
+                    </div>
+                {% endif %}
+                </div>
+            </div>
+
+        </main>
+    </div>
+</div>
+
+<!-- MODAL EMITIR CITACIÓN -->
+<div class="modal-overlay" id="modal-citacion">
+    <div class="modal" style="max-width:620px;">
+        <div class="modal-header">
+            <h3><i class="fas fa-file-signature"></i> Emitir Citación Policial</h3>
+            <button class="modal-close" onclick="closeModal('modal-citacion')">×</button>
+        </div>
+        <form method="POST" action="/fiscal/citacion/emitir">
+            <div class="modal-body">
+                <input type="hidden" name="denuncia_id" id="cit_denuncia_id">
+                <div class="form-group" style="margin-bottom:16px;">
+                    <label>Folio del Caso</label>
+                    <input type="text" id="cit_folio_display" readonly
+                        style="background:var(--gris-fondo); font-family:monospace; color:#4c1d95; font-weight:700;">
+                </div>
+                <div class="form-grid form-grid-2" style="gap:16px;">
+                    <div class="form-group" style="grid-column:1/-1;">
+                        <label>Nombre del Citado</label>
+                        <input type="text" name="citado_nombre" id="cit_citado" placeholder="Nombre completo del citado" required>
+                    </div>
+                    <div class="form-group" style="grid-column:1/-1;">
+                        <label>Lugar de Comparecencia</label>
+                        <input type="text" name="lugar" placeholder="Ej: 2do Anillo, Zona Los Tuscales, FELCC DP-8" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Fecha de la Cita</label>
+                        <input type="date" name="fecha_cita" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Hora de la Cita</label>
+                        <input type="time" name="hora_cita" value="09:30" required>
+                    </div>
+                    <div class="form-group" style="grid-column:1/-1;">
+                        <label>Motivo de la Citación</label>
+                        <textarea name="motivo" placeholder="Prestar declaración informativa policial..." required></textarea>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline" onclick="closeModal('modal-citacion')">Cancelar</button>
+                <button type="submit" class="btn btn-morado"><i class="fas fa-file-signature"></i> Emitir Citación</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script src="{{ url_for('static', filename='js/app.js') }}"></script>
+<script>
+function abrirCitacion(id, citado, folio) {
+    document.getElementById('cit_denuncia_id').value = id;
+    document.getElementById('cit_citado').value = citado;
+    document.getElementById('cit_folio_display').value = folio;
+    openModal('modal-citacion');
+}
+</script>
+</body>
+</html>

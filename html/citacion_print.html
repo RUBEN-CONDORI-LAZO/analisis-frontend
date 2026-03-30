@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Citación Policial N° {{ cit.numero }} — FELCC DP-8</title>
+    <link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:wght@400;700&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        body { background: #e5e7eb; font-family: 'Source Serif 4', serif; }
+
+        .no-print {
+            background: #1e293b; color: white;
+            padding: 14px 40px;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .no-print span { font-family: 'Inter', sans-serif; font-size: 14px; }
+        .btn-print {
+            background: #004130; color: white; border: none;
+            padding: 10px 24px; border-radius: 8px;
+            font-family: 'Inter', sans-serif; font-size: 14px;
+            font-weight: 700; cursor: pointer;
+            display: flex; align-items: center; gap: 8px;
+        }
+        .btn-print:hover { background: #006e52; }
+
+        .doc-wrapper { padding: 40px; display: flex; justify-content: center; }
+
+        .doc {
+            width: 794px; /* A4 approx at 96dpi */
+            min-height: 1123px;
+            background: white;
+            padding: 60px 80px;
+            box-shadow: 0 4px 20px rgba(0,0,0,.15);
+        }
+
+        .doc-header {
+            text-align: center;
+            padding-bottom: 24px;
+            border-bottom: 3px double #1e293b;
+            margin-bottom: 32px;
+        }
+        .doc-header h2 {
+            font-size: 20px; font-weight: 700;
+            letter-spacing: 2px; text-transform: uppercase;
+        }
+        .doc-header h3 {
+            font-size: 15px; font-weight: 400;
+            color: #475569; margin-top: 4px; letter-spacing: 1px;
+        }
+
+        .doc-meta {
+            display: flex; justify-content: space-between;
+            font-size: 13px; margin-bottom: 48px;
+            font-family: 'Inter', sans-serif;
+        }
+        .doc-meta div { line-height: 1.7; }
+        .doc-meta strong { color: #1e293b; }
+
+        .doc-title-section { text-align: center; margin-bottom: 48px; }
+        .doc-title {
+            font-size: 32px; font-weight: 700;
+            text-transform: uppercase; letter-spacing: 4px;
+            text-decoration: underline;
+        }
+        .doc-number {
+            font-size: 16px; color: #475569;
+            font-family: 'Inter', sans-serif;
+            margin-top: 8px; font-weight: 600;
+        }
+
+        .doc-body {
+            font-size: 16px; line-height: 1.9;
+            text-align: justify;
+            color: #1e293b;
+        }
+        .doc-body p { margin-bottom: 20px; }
+        .doc-body .highlight {
+            font-size: 20px; font-weight: 700;
+            text-align: center; display: block;
+            border: 1px dashed #94a3b8;
+            padding: 14px; border-radius: 6px;
+            margin: 20px 0;
+            background: #f8fafc;
+        }
+        .doc-details {
+            background: #f1f5f9; border-radius: 8px;
+            padding: 20px 28px; margin: 28px 0;
+            font-family: 'Inter', sans-serif;
+        }
+        .doc-details table { width: 100%; }
+        .doc-details td { padding: 7px 0; font-size: 15px; }
+        .doc-details td:first-child { color: #64748b; font-weight: 600; width: 160px; }
+        .doc-details td:last-child { color: #1e293b; font-weight: 700; }
+
+        .doc-warning {
+            margin-top: 40px; padding: 18px 24px;
+            background: #fef2f2; border: 2px solid #fca5a5;
+            border-radius: 8px; color: #b91c1c;
+            font-family: 'Inter', sans-serif;
+            font-size: 13px; font-weight: 700;
+            text-align: center; line-height: 1.6;
+        }
+
+        .doc-signature {
+            margin-top: 80px; display: flex; justify-content: flex-end;
+        }
+        .signature-box { text-align: center; min-width: 250px; }
+        .signature-line {
+            border-top: 2px solid #1e293b;
+            margin-bottom: 8px;
+        }
+        .signature-box p { font-size: 14px; font-family: 'Inter', sans-serif; }
+        .signature-box strong { font-size: 15px; display: block; }
+
+        .doc-footer {
+            margin-top: 40px; padding-top: 20px;
+            border-top: 1px solid #e2e8f0;
+            text-align: center;
+            font-size: 11px; color: #94a3b8;
+            font-family: 'Inter', sans-serif;
+        }
+
+        @media print {
+            .no-print { display: none !important; }
+            body { background: white; }
+            .doc-wrapper { padding: 0; }
+            .doc { box-shadow: none; width: 100%; min-height: auto; padding: 40px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="no-print">
+    <span>⚖️ Vista Previa del Documento Legal — {{ cit.numero }}</span>
+    <button class="btn-print" onclick="window.print()">
+        🖨️ Imprimir Citación
+    </button>
+</div>
+
+<div class="doc-wrapper">
+    <div class="doc">
+        <div class="doc-header">
+            <h2>Policía Nacional Boliviana</h2>
+            <h3>Fuerza Especial de Lucha Contra el Crimen — Distrito Policial N° 8</h3>
+            <h3>Santa Cruz de la Sierra, Bolivia</h3>
+        </div>
+
+        <div class="doc-meta">
+            <div>
+                <strong>N° Doc:</strong> {{ cit.numero }}<br>
+                <strong>Caso:</strong> {{ cit.folio }}<br>
+                <strong>Emisión:</strong> {{ cit.fecha_emision[:10] }}
+            </div>
+            <div style="text-align:right;">
+                <strong>Fiscal Emisor:</strong><br>
+                {{ fiscal.nombre }}<br>
+                <span style="color:#64748b;">fiscal@gmail.com</span>
+            </div>
+        </div>
+
+        <div class="doc-title-section">
+            <div class="doc-title">Citación Policial</div>
+            <div class="doc-number">Número Oficial: {{ cit.numero }}</div>
+        </div>
+
+        <div class="doc-body">
+            <p>
+                Por disposición de la Fiscalía de Materia del Ministerio Público, en el marco del caso registrado bajo el folio <strong>{{ cit.folio }}</strong>, se ordena formalmente CITAR a:
+            </p>
+
+            <span class="highlight">{{ cit.citado_nombre }}</span>
+
+            <p>
+                Para que comparezca de manera <strong>OBLIGATORIA E IMPRORROGABLE</strong> ante las dependencias de la Fuerza Especial de Lucha Contra el Crimen (FELCC) del Distrito Policial N° 8, a los efectos de:
+            </p>
+
+            <div class="doc-details">
+                <table>
+                    <tr>
+                        <td>Motivo:</td>
+                        <td>{{ cit.motivo }}</td>
+                    </tr>
+                    <tr>
+                        <td>Lugar:</td>
+                        <td>{{ cit.lugar }}</td>
+                    </tr>
+                    <tr>
+                        <td>Fecha:</td>
+                        <td>{{ cit.fecha_cita }}</td>
+                    </tr>
+                    <tr>
+                        <td>Hora:</td>
+                        <td>{{ cit.hora_cita }}</td>
+                    </tr>
+                    <tr>
+                        <td>Denunciante:</td>
+                        <td>{{ cit.denunciante_nombre }}</td>
+                    </tr>
+                </table>
+            </div>
+
+            <p>
+                La persona citada deberá presentarse con su Cédula de Identidad vigente. En caso de no poder comparecer, deberá comunicarlo anticipadamente y de manera justificada a esta institución.
+            </p>
+        </div>
+
+        <div class="doc-warning">
+            ⚠️ ADVERTENCIA LEGAL: EN CASO DE INCOMPARECENCIA INJUSTIFICADA, SE EXPEDIRÁ UN MANDAMIENTO DE APREMIO EN SU CONTRA, DE CONFORMIDAD AL ARTÍCULO 224 DEL CÓDIGO DE PROCEDIMIENTO PENAL (CPP) DE LA REPÚBLICA DE BOLIVIA.
+        </div>
+
+        <div class="doc-signature">
+            <div class="signature-box">
+                <div style="height:60px;"></div>
+                <div class="signature-line"></div>
+                <p><strong>{{ fiscal.nombre }}</strong></p>
+                <p>Fiscal de Materia — Ministerio Público</p>
+                <p style="color:#64748b; font-size:13px;">FELCC Distrito Policial N° 8</p>
+            </div>
+        </div>
+
+        <div class="doc-footer">
+            Documento generado electrónicamente por el Sistema Informático de Control de Denuncias — FELCC DP-8.<br>
+            Este documento tiene validez legal conforme a normativa vigente. © 2025 Grupo 4 — ADS II
+        </div>
+    </div>
+</div>
+
+</body>
+</html>
